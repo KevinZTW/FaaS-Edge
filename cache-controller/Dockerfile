@@ -1,21 +1,21 @@
 
 # temporarily change to use ubuntu image to install couchdb
-FROM ubuntu:bionic
+FROM ubuntu:jammy
 
-# ENV GO_VERSION=1.20
+ENV GO_VERSION=1.20
 
-# RUN apt-get update
-# RUN apt-get install -y wget git gcc
+RUN apt-get update
+RUN apt-get install -y wget git gcc
 
-# #  install golang
-# RUN wget -P /tmp "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz"
+#  install golang
+RUN wget -P /tmp "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz"
 
-# RUN tar -C /usr/local -xzf "/tmp/go${GO_VERSION}.linux-amd64.tar.gz"
-# RUN rm "/tmp/go${GO_VERSION}.linux-amd64.tar.gz"
+RUN tar -C /usr/local -xzf "/tmp/go${GO_VERSION}.linux-amd64.tar.gz"
+RUN rm "/tmp/go${GO_VERSION}.linux-amd64.tar.gz"
 
-# ENV GOPATH /go
-# ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
-# RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 
 
 # install couchdb =====================
@@ -31,17 +31,36 @@ RUN  gpg --dearmor < /tmp/keys.asc | tee /usr/share/keyrings/couchdb-archive-key
 
 # RUN source /etc/os-release
 # Since can't use source in dockerfile, hardcode version as temporary workaround
-ENV VERSION_CODENAME=bionic
+ENV VERSION_CODENAME=jammy
 
 RUN echo "deb [signed-by=/usr/share/keyrings/couchdb-archive-keyring.gpg] https://apache.jfrog.io/artifactory/couchdb-deb/ ${VERSION_CODENAME} main" | tee /etc/apt/sources.list.d/couchdb.list >/dev/null
 
 # Couchdb install requires user input, so set noninteractive as workaround
+
+
+RUN debconf-set-selections
+RUN echo "couchdb couchdb/mode select standalone" | debconf-set-selections
+RUN echo "couchdb couchdb/mode seen true" | debconf-set-selections
+RUN echo "couchdb couchdb/bindaddress string 127.0.0.1" | debconf-set-selections
+RUN echo "couchdb couchdb/bindaddress seen true" | debconf-set-selections
+RUN echo "couchdb couchdb/adminpass password pwd123" | debconf-set-selections
+RUN echo "couchdb couchdb/adminpass_again password pwd123" | debconf-set-selections
+RUN echo "couchdb couchdb/adminpass_again seen true" | debconf-set-selections
+
+
+# Maybe also need Erlang cookie?
+RUN echo "couchdb couchdb/cookie string elmo" | debconf-set-selections
+RUN echo "couchdb couchdb/cookie seen true" | debconf-set-selections
+
+# Reference: https://github.com/apache/couchdb-pkg/blob/main/debian/README.Debian
+
+
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt update -y
 
 RUN apt install -y apt-utils
-RUN apt install -f -y apt-utils couchdb
+RUN apt install -y couchdb
 
 # =====================================
 
