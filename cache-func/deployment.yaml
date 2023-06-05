@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cache-func
+  labels:
+    app: cache-func
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cache-func
+  template:
+    metadata:
+      labels:
+        app: cache-func
+    spec:
+      containers:
+      - name: cache-func
+        imagePullPolicy: Always
+        image: kevinztw/cache-func
+        ports:
+        - containerPort: 3038

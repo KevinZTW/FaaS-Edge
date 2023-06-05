@@ -1,0 +1,8 @@
+version: '3.9'
+
+services:
+  cache-func:
+    build: .
+    image: kevinztw/cache-func
+    ports:
+    - 3038:3038

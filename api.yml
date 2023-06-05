@@ -1,0 +1,12 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://0.0.0.0:8083
+functions:
+  api:
+    lang: go
+    handler: ./api
+    image: kevinztw/api:latest
+    build_args:
+      GO111MODULE: on
+

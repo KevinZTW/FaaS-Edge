@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cache-controller
+  labels:
+    app: cache-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cache-controller
+  template:
+    metadata:
+      labels:
+        app: cache-controller
+    spec:
+      containers:
+      - name: cache-controller
+        imagePullPolicy: Always
+        image: kevinztw/cache-controller
+        ports:
+        - containerPort: 3037
