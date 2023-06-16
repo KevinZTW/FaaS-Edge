@@ -1,0 +1,21 @@
+version: '3.9'
+
+networks:
+  default:
+    name: gatech-faas-experiment
+    driver: bridge
+services:
+  func1:
+    build: .
+    image: kevinztw/func
+    ports:
+    - 3038:3038
+    environment:
+    - PEER_ADDR=http://func2:3038
+  func2:
+    build: .
+    image: kevinztw/func
+    ports:
+    - 3039:3038
+    environment:
+    - PEER_ADDR=http://func1:3038

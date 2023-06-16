@@ -26,7 +26,7 @@ func NewClient() *Client {
 func (c *Client) FormCluster() {
 	val, err := c.Do(ctx, "get", "key").Result()
 
-	// 10.244.0.109 cache-func
+	// 10.244.0.109 func
 	// 10.244.0.99 openfass-api
 
 	if err != nil {
