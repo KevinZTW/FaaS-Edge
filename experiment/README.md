@@ -5,5 +5,12 @@
   - Local Hit: If data exist in it's store, it would just fetch it from there
   - Remote Hit: Else, it would try to access the data from the peer container
 
-## Setup
-- Two container
+## Usage
+- emulate invoking two functions
+```sh
+  docker compose up
+```
+- emulate invoking single function
+```sh
+  go run main.go  "http://localhost:<peer port>" "<serving port>"
+```

@@ -3,13 +3,14 @@ package store
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Store struct {
@@ -74,6 +75,7 @@ func (s *Store) Get(key string) interface{} {
 	return value
 }
 
+// This function is for peer to get data from it's local store
 func (s *Store) PeersGet(key string) interface{} {
 	value, exist := s.data[key]
 	if exist {
@@ -121,14 +123,14 @@ func (s *Store) getFromPeers(key string) interface{} {
 	return gr.Value
 }
 
-// TODO: maybe really fetch from remote storage
+// TODO: maybe really fetch from remote storage?
 func (s *Store) getFromRemoteStorage(key string) interface{} {
 	time.Sleep(time.Millisecond * time.Duration(s.remoteStorageFetchDuration))
 	k, err := strconv.Atoi(key)
 	if err != nil {
 		log.Error(err.Error())
 	}
-	v := k + 100
+	v := struct{ name string }{name: "remote storage"}
 	log.Infof("[Fetching][remote Storage] Fetching from remote storage key: %d, return value: %d", k, v)
 
 	return v
