@@ -41,3 +41,25 @@ func K8SSchedulerFilter(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 		w.Write(response)
 	}
 }
+
+func TestAutoScaling(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	for i := 0; i < 10000; i++ {
+		// send request to http://localhost:8080/function/nodeinfo
+		go func() {
+			res, err := http.Get("http://localhost:8080/function/nodeinfo")
+			if err != nil {
+				panic(err)
+			}
+
+			// read response body
+			defer res.Body.Close()
+			//body, err := ioutil.ReadAll(res.Body)
+			//if err != nil {
+			//	panic(err)
+			//}
+			//fmt.Println(string(body))
+		}()
+
+	}
+
+}

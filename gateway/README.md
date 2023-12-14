@@ -107,9 +107,31 @@ ExecStart=/usr/local/bin/k3s \
 ```
 No run this application and restart the K3S, the application should output the message when a new pod is created.
 ```sh
+k3s-1 $ git clone https://github.com/KevinZTW/FaaS-Edge.git
+k3s-1 $ cd FaaS-Edge/gateway
+# install golang
+k3s-1 $ wget https://go.dev/dl/go1.21.5.linux-arm64.tar.gz
+k3s-1 $ sudo rm -rf /usr/local/go
+k3s-1 $ sudo tar -C /usr/local -xzf go1.21.5.linux-arm64.tar.gz
+ 
+k3s-1 $ export PATH=$PATH:/usr/local/go/bin
+k3s-1 $ echo "export PATH=$PATH:/usr/local/go/bin" >> ~/.bashrc
+k3s-1 $ go build  && ./gateway # build and run the application
 
 ```
 
+### Install OpenFaaS & Verify the Kubernetes scheduler extension 
+- Install OpenFaaS following the [official guide](https://docs.openfaas.com/deployment/kubernetes/#install-openfaas-with-arkade)
+- Forward the gateway port to host `kubectl port-forward -n openfaas svc/gateway 8080:8080 --address='0.0.0.0' &`  
+
+
+```sh
+k3s-1 $ PASSWORD=$(kubectl get secret -n openfaas basic-auth -o jsonpath="{.data.basic-auth-password}" | base64 --decode; echo)
+echo -n $PASSWORD | faas-cli login --username admin --password-stdin # login the OpenFaaS
+
+k3s-1 $ faas-cli store list
+k3s-1 $ faas-cli store deploy 
+```
 
 
 

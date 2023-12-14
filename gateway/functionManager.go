@@ -51,61 +51,60 @@ type FunctionManager struct {
 
 func InitFunctionManager() {
 	functionManager = NewFunctionManager()
-	go func() {
-		for {
-			fmt.Println("start to get pod details")
-			time.Sleep(3 * time.Second)
+	fetchFunctionInfo()
+}
 
-			//allUpdated := true
-			//now := time.Now()
-			//for name, functions := range functionManager.FunctionMap {
-			//for _, function := range functions {
-			//threshold := now.Add(-1 * time.Minute)
+func fetchFunctionInfo() {
+	fmt.Println("start to get pod details")
 
-			//fmt.Println(function.UpdatedAt.Before(threshold))
-			//if function.UpdatedAt.Before(threshold) {
-			//	allUpdated = false
-			//}
-			//	}
-			//}
+	//allUpdated := true
+	//now := time.Now()
+	//for name, functions := range functionManager.FunctionMap {
+	//for _, function := range functions {
+	//threshold := now.Add(-1 * time.Minute)
 
-			//if allUpdated {
-			//	fmt.Println("All updated")
-			//	continue
-			//}
+	//fmt.Println(function.UpdatedAt.Before(threshold))
+	//if function.UpdatedAt.Before(threshold) {
+	//	allUpdated = false
+	//}
+	//	}
+	//}
 
-			pods, err := functionManager.clientset.CoreV1().Pods("openfaas-fn").List(context.TODO(), metav1.ListOptions{})
-			if err != nil {
-				panic(err.Error())
-			}
-			for _, pod := range pods.Items {
-				functionName := pod.Labels[LabelName]
+	//if allUpdated {
+	//	fmt.Println("All updated")
+	//	continue
+	//}
 
-				if _, ok := functionManager.FunctionMap[functionName]; !ok {
-					functionManager.FunctionMap[functionName] = make(map[string]*Function)
-				}
+	pods, err := functionManager.clientset.CoreV1().Pods("openfaas-fn").List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		panic(err.Error())
+	}
+	for _, pod := range pods.Items {
+		functionName := pod.Labels[LabelName]
 
-				if _, ok := functionManager.FunctionMap[functionName][pod.Name]; !ok {
-					functionManager.FunctionMap[functionName][pod.Name] = NewFunction(functionName, pod.Name)
-				}
-				f := functionManager.FunctionMap[functionName][pod.Name]
-				f.IP = pod.Status.PodIP
-				now := time.Now()
-				f.UpdatedAt = &now
-				f.PodName = pod.Name
-
-				f.DeployedAt = Node{
-					Name: pod.Spec.NodeName,
-					UID:  string(pod.UID),
-				}
-				f.UpdatedAt = &now
-
-				log.Printf("Pod name: %s\n", pod.Name)
-				log.Printf("Pod IP: %s\n", pod.Status.PodIP)
-
-			}
+		if _, ok := functionManager.FunctionMap[functionName]; !ok {
+			functionManager.FunctionMap[functionName] = make(map[string]*Function)
 		}
-	}()
+
+		if _, ok := functionManager.FunctionMap[functionName][pod.Name]; !ok {
+			functionManager.FunctionMap[functionName][pod.Name] = NewFunction(functionName, pod.Name)
+		}
+		f := functionManager.FunctionMap[functionName][pod.Name]
+		f.IP = pod.Status.PodIP
+		now := time.Now()
+		f.UpdatedAt = &now
+		f.PodName = pod.Name
+
+		f.DeployedAt = Node{
+			Name: pod.Spec.NodeName,
+			UID:  string(pod.UID),
+		}
+		f.UpdatedAt = &now
+
+		log.Printf("Pod name: %s\n", pod.Name)
+		log.Printf("Pod IP: %s\n", pod.Status.PodIP)
+
+	}
 }
 
 func NewFunctionManager() *FunctionManager {
@@ -124,8 +123,13 @@ func NewFunctionManager() *FunctionManager {
 }
 
 func (f *FunctionManager) RegisterFunction(name string, podName string) {
-	function := NewFunction(name, podName)
-	f.FunctionMap[name][podName] = function
+	if _, ok := functionManager.FunctionMap[name]; !ok {
+		functionManager.FunctionMap[name] = make(map[string]*Function)
+	}
+
+	if _, ok := functionManager.FunctionMap[name][podName]; !ok {
+		functionManager.FunctionMap[name][podName] = NewFunction(name, podName)
+	}
 }
 
 var config *rest.Config
