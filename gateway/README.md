@@ -130,12 +130,14 @@ k3s-1 $ PASSWORD=$(kubectl get secret -n openfaas basic-auth -o jsonpath="{.data
 echo -n $PASSWORD | faas-cli login --username admin --password-stdin # login the OpenFaaS
 
 k3s-1 $ faas-cli store list
-k3s-1 $ faas-cli store deploy 
+k3s-1 $ faas-cli store deploy nodeinfo # deploy a function from store 
 ```
-
-
-
-
+During the deployment, the application should output the message when a new pod is registered to our function manager.
+We could also call the function through our gateway 
+```sh
+k3s-1 $ curl GET http://localhost:8888/function/nodeinfo
+```
+Our application would just naively proxy the request to random pod it found.
 
 
 

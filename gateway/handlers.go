@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -14,7 +15,7 @@ import (
 	schedulerapi "k8s.io/kube-scheduler/extender/v1"
 )
 
-func K8SSchedulerFilter(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func K8SSchedulerFilterHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var buf bytes.Buffer
 	body := io.TeeReader(r.Body, &buf)
 
@@ -42,7 +43,7 @@ func K8SSchedulerFilter(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 	}
 }
 
-func TestAutoScaling(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func TestAutoScalingHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	for i := 0; i < 10000; i++ {
 		// send request to http://localhost:8080/function/nodeinfo
 		go func() {
@@ -61,5 +62,29 @@ func TestAutoScaling(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 		}()
 
 	}
+}
 
+func FunctionRequestHandler(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+
+	functionName := params.ByName("name")
+	fmt.Println("function name: " + functionName)
+
+	function := functionManager.GetRandomPodFunction(functionName)
+	if function == nil {
+		writer.Write([]byte("Not found function with name " + functionName + "\n"))
+		return
+	}
+
+	res, err := http.Get("http://" + function.IP + ":8080")
+	if err != nil {
+		panic(err)
+	}
+
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	writer.Write(body)
 }

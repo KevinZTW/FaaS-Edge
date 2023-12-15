@@ -122,6 +122,19 @@ func NewFunctionManager() *FunctionManager {
 	return f
 }
 
+func (f *FunctionManager) GetRandomPodFunction(name string) *Function {
+	if podMap, ok := functionManager.FunctionMap[name]; !ok {
+		return nil
+	} else if len(podMap) == 0 {
+		return nil
+	} else {
+		for _, function := range podMap {
+			return function
+		}
+		return nil
+	}
+}
+
 func (f *FunctionManager) RegisterFunction(name string, podName string) {
 	if _, ok := functionManager.FunctionMap[name]; !ok {
 		functionManager.FunctionMap[name] = make(map[string]*Function)
